@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -72,11 +73,49 @@ namespace PhoneNumbers
             }
         }
 
+        public void ReadExternal(BinaryReader objectInput)
+        {
+            numOfEntries = objectInput.ReadInt32();
+            if (countryCallingCodes == null || countryCallingCodes.Length<numOfEntries) {
+                countryCallingCodes = new int[numOfEntries];
+            }
+            if (availableLanguages == null) {
+                availableLanguages = new List<HashSet<string>>();
+            }
+            for (var i = 0; i < numOfEntries; i++)
+            {
+                countryCallingCodes[i] = objectInput.ReadInt32();
+                var numOfLangs = objectInput.ReadInt32();
+                var setOfLangs = new HashSet<string>();
+                for (var j = 0; j < numOfLangs; j++)
+                {
+                    setOfLangs.Add(objectInput.ReadString());
+                }
+                availableLanguages.Add(setOfLangs);
+            }
+        }
+
+        public void WriteExternal(BinaryWriter objectOutput)
+        {
+            objectOutput.Write(numOfEntries);
+            for (var i = 0; i < numOfEntries; i++) {
+                objectOutput.Write(countryCallingCodes[i]);
+                var setOfLangs = availableLanguages[i];
+                var numOfLangs = setOfLangs.Count;
+                objectOutput.Write(numOfLangs);
+                foreach (var lang in setOfLangs)
+                {
+                    objectOutput.Write(lang);
+                }
+            }
+        }
+
+
         /**
-         * Returns a string representing the data in this class. The string contains one line for each
-         * country calling code. The country calling code is followed by a '|' and then a list of
-         * comma-separated languages sorted in ascending order.
-         */
+        * Returns a string representing the data in this class. The string contains one line for each
+        * country calling code. The country calling code is followed by a '|' and then a list of
+        * comma-separated languages sorted in ascending order.
+        */
         public override string ToString()
         {
             var output = new StringBuilder();
@@ -136,8 +175,7 @@ namespace PhoneNumbers
         {
             var fullLocale = ConstructFullLocale(language, script, region);
             var fullLocaleStr = fullLocale.ToString();
-            string normalizedLocale;
-            if (LocaleNormalizationMap.TryGetValue(fullLocaleStr, out normalizedLocale))
+            if (LocaleNormalizationMap.TryGetValue(fullLocaleStr, out var normalizedLocale))
             {
                 if (setOfLangs.Contains(normalizedLocale))
                 {

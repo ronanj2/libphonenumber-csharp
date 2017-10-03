@@ -27,7 +27,7 @@ namespace PhoneNumbers
     *
     * @author Shaopeng Jia
     */
-    public class DefaultMapStorage : AreaCodeMapStorageStrategy
+    public class DefaultMapStorage : PhonePrefixMapStorageStrategy
     {
         private int[] phoneNumberPrefixes;
         private string[] descriptions;
@@ -63,8 +63,10 @@ namespace PhoneNumbers
                 possibleLengthsSet.Add(lengthOfPrefix);
             }
             PossibleLengths.Clear();
-            PossibleLengths.AddRange(possibleLengthsSet);
-            PossibleLengths.Sort();
+            foreach (var length in possibleLengthsSet)
+            {
+                PossibleLengths.Add(length);
+            }
         }
     }
 }

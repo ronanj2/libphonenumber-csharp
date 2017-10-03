@@ -4,8 +4,8 @@
     <Description>C# port of Google's common Java, C++ and Javascript library for parsing, formatting, storing and validating international phone numbers. For usage samples: http: //code.google.com/p/libphonenumber/A port of Google's libphonenumber for .NET Core</Description>
     <AssemblyTitle>libphonenumber-csharp</AssemblyTitle>
     <VersionPrefix>$(APPVEYOR_BUILD_VERSION)</VersionPrefix>
-    <Authors>Patrick Mézard;Jarrod Alexander;Google;libphonenumber;contributors</Authors>
-    <TargetFrameworks>net40;netstandard1.3;netstandard2.0</TargetFrameworks>
+    <Authors>Patrick Mézard;Jarrod Alexander;Tom Clegg;Google;libphonenumber contributors</Authors>
+    <TargetFrameworks>net40;netstandard1.6;netstandard2.0</TargetFrameworks>
     <AssemblyName>PhoneNumbers</AssemblyName>
     <PackageId>libphonenumber-csharp</PackageId>
     <PackageTags>phonenumber phone libphonenumber e164 e.164 international</PackageTags>
