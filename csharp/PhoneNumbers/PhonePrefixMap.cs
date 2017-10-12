@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Sockets;
 
 namespace PhoneNumbers
 {
@@ -44,7 +45,6 @@ namespace PhoneNumbers
          * {@link Externalizable}. The empty map could later be populated by
          * {@link #readPhonePrefixMap(java.util.SortedMap)} or {@link #readExternal(java.io.ObjectInput)}.
          */
-        public PhonePrefixMap() { }
 
         /**
          * Gets the size of the provided phone prefix map storage. The map storage passed-in will be
@@ -54,12 +54,13 @@ namespace PhoneNumbers
             SortedDictionary<int, string> phonePrefixMap)
         {
             mapStorage.ReadFromSortedMap(phonePrefixMap);
-            var writer = new BinaryWriter();
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(writer);
-            mapStorage.WriteExternal(objectOutputStream);
-            objectOutputStream.flush();
-            int sizeOfStorage = writer.size();
-            objectOutputStream.close();
+            var writer = new BinaryWriter(new MemoryStream());
+            mapStorage.WriteExternal(writer);
+            writer.Flush();
+            var sizeOfStorage = (int)writer.BaseStream.Length;
+#if !NETSTANDARD1_6
+            writer.Close();
+#endif
             return sizeOfStorage;
         }
 

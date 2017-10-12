@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace PhoneNumbers
@@ -35,11 +36,6 @@ namespace PhoneNumbers
         public override int GetPrefix(int index)
         {
             return phoneNumberPrefixes[index];
-        }
-
-        public override int GetStorageSize()
-        {
-            return phoneNumberPrefixes.Length * sizeof(int) + descriptions.Sum(d => d.Length);
         }
 
         public override string GetDescription(int index)
@@ -66,6 +62,42 @@ namespace PhoneNumbers
             foreach (var length in possibleLengthsSet)
             {
                 PossibleLengths.Add(length);
+            }
+        }
+
+        public override void ReadExternal(BinaryReader objectInput)
+        {
+            NumOfEntries = objectInput.ReadInt32();
+            if (phoneNumberPrefixes == null || phoneNumberPrefixes.Length < NumOfEntries) {
+                phoneNumberPrefixes = new int[NumOfEntries];
+            }
+            if (descriptions == null || descriptions.Length < NumOfEntries) {
+                descriptions = new string[NumOfEntries];
+            }
+            for (var i = 0; i < NumOfEntries; i++) {
+            phoneNumberPrefixes[i] = objectInput.ReadInt32();
+            descriptions[i] = objectInput.ReadString();
+            }
+            var sizeOfLengths = objectInput.ReadInt32();
+            PossibleLengths.Clear();
+            for (var i = 0; i < sizeOfLengths; i++)
+            {
+                PossibleLengths.Add(objectInput.ReadInt32());
+            }
+        }
+
+        public override void WriteExternal(BinaryWriter objectOutput)
+        {
+            objectOutput.Write(NumOfEntries);
+            for (var i = 0; i < NumOfEntries; i++)
+            {
+                objectOutput.Write(phoneNumberPrefixes[i]);
+                objectOutput.Write(descriptions[i]);
+            }
+            var sizeOfLengths = PossibleLengths.Count;
+            objectOutput.Write(sizeOfLengths);
+            foreach (var length in PossibleLengths) {
+                objectOutput.Write(length);
             }
         }
     }

@@ -63,7 +63,9 @@ namespace PhoneNumbers
             catch (IOException) {
             }
             finally {
-                input.Close();
+#if !NETSTANDARD1_6
+                input?.Close();
+#endif
             }
         }
 
@@ -100,21 +102,23 @@ namespace PhoneNumbers
                 availablePhonePrefixMaps.Add(fileName, map);
             } catch (IOException) {
             } finally {
-                input.Close();
+#if !NETSTANDARD1_6
+                input?.Close();
+#endif
             }
         }
 
         private static void Close(Stream input)
         {
-            if (input != null) {
-                try
-                {
-                    input.Close();
-                }
-                catch (IOException)
-                {
-                }
+#if !NETSTANDARD1_6
+            try
+            {
+                input?.Close();
             }
+            catch (IOException)
+            {
+            }
+#endif
         }
 
         /**

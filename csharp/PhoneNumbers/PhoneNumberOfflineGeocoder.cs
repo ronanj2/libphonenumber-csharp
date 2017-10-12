@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Reflection;
 
 namespace PhoneNumbers
 {
@@ -41,21 +37,21 @@ namespace PhoneNumbers
             Country = countryCode;
         }
 
-        public string GetDisplayCountry(string language)
+        public string GetDisplayCountry(Locale language)
         {
             if (string.IsNullOrEmpty(Country))
                 return "";
-            var name = GetCountryName(Country, language);
+            var name = GetCountryName(Country, language.Language);
             if (name != null)
                 return name;
             var lang = CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
-            if (lang != language)
+            if (lang != language.Language)
             {
                 name = GetCountryName(Country, lang);
                 if (name != null)
                     return name;
             }
-            if (language != "en" && lang != "en")
+            if (language.Language != "en" && lang != "en")
             {
                 name = GetCountryName(Country, "en");
                 if (name != null)
@@ -85,8 +81,7 @@ namespace PhoneNumbers
 
         private readonly PhoneNumberUtil phoneUtil = PhoneNumberUtil.GetInstance();
 
-        // @VisibleForTesting
-        PhoneNumberOfflineGeocoder(string phonePrefixDataDirectory)
+        internal PhoneNumberOfflineGeocoder(string phonePrefixDataDirectory)
         {
             prefixFileReader = new PrefixFileReader(phonePrefixDataDirectory);
         }
@@ -112,13 +107,13 @@ namespace PhoneNumbers
          * Returns the customary display name in the given language for the given territory the phone
          * number is from. If it could be from many territories, nothing is returned.
          */
-        private string GetCountryNameForNumber(PhoneNumber number, Locale language)
+        private string GetCountryNameForNumber(PhoneNumber number, Locale inLocale)
         {
             var regionCodes =
                 phoneUtil.GetRegionCodesForCountryCode(number.CountryCode);
             if (regionCodes.Count == 1)
             {
-                return GetRegionDisplayName(regionCodes[0], language);
+                return GetRegionDisplayName(regionCodes[0], inLocale);
             }
             else
             {
@@ -136,18 +131,18 @@ namespace PhoneNumbers
                         regionWhereNumberIsValid = regionCode;
                     }
                 }
-                return GetRegionDisplayName(regionWhereNumberIsValid, language);
+                return GetRegionDisplayName(regionWhereNumberIsValid, inLocale);
             }
         }
 
         /**
          * Returns the customary display name in the given language for the given region.
          */
-        private string GetRegionDisplayName(string regionCode, Locale language)
+        private string GetRegionDisplayName(string regionCode, Locale inLocale)
         {
             return (regionCode == null || regionCode.Equals("ZZ")
                 || regionCode.Equals(PhoneNumberUtil.RegionCodeForNonGeoEntity))
-                ? "" : new Locale("", regionCode).GetDisplayCountry(language);
+                ? "" : new Locale("", regionCode).GetDisplayCountry(inLocale);
         }
 
         /**
@@ -199,7 +194,7 @@ namespace PhoneNumbers
                 areaDescription = prefixFileReader.GetDescriptionForNumber(number, langStr, scriptStr,
                                                                            regionStr);
             }
-            return (areaDescription.Length > 0)
+            return areaDescription.Length > 0
                 ? areaDescription : GetCountryNameForNumber(number, languageCode);
         }
 
@@ -225,21 +220,16 @@ namespace PhoneNumbers
          *     empty string if the number could come from multiple countries, or the country code is
          *     in fact invalid
          */
-        public string GetDescriptionForValidNumber(PhoneNumber number, Locale languageCode,
+        public string GetDescriptionForValidNumber(PhoneNumber number, Locale inLocale,
                                                    string userRegion)
         {
             // If the user region matches the number's region, then we just show the lower-level
             // description, if one exists - if no description exists, we will show the region(country) name
-            // for the number.
-            string regionCode = phoneUtil.GetRegionCodeForNumber(number);
-            if (userRegion.Equals(regionCode))
-            {
-                return GetDescriptionForValidNumber(number, languageCode);
-            }
-            // Otherwise, we just show the region(country) name for now.
-            return GetRegionDisplayName(regionCode, languageCode);
-            // TODO: Concatenate the lower-level and country-name information in an appropriate
-            // way for each language.
+            // for the number. Otherwise, we just show the region(country) name for now.
+            return userRegion.Equals(phoneUtil.GetRegionCodeForNumber(number))
+                ? GetDescriptionForValidNumber(number, inLocale)
+                : GetRegionDisplayName(phoneUtil.GetRegionCodeForNumber(number), inLocale);
+            // TODO: Concatenate the lower-level and country-name information in an appropriate way for each language.
         }
 
         /**
@@ -253,12 +243,12 @@ namespace PhoneNumbers
          */
         public string GetDescriptionForNumber(PhoneNumber number, Locale languageCode)
         {
-            PhoneNumberType numberType = phoneUtil.GetNumberType(number);
+            var numberType = phoneUtil.GetNumberType(number);
             if (numberType == PhoneNumberType.UNKNOWN)
             {
                 return "";
             }
-            else if (!phoneUtil.IsNumberGeographical(numberType, number.CountryCode))
+            if (!phoneUtil.IsNumberGeographical(numberType, number.CountryCode))
             {
                 return GetCountryNameForNumber(number, languageCode);
             }
@@ -280,12 +270,12 @@ namespace PhoneNumbers
         public string GetDescriptionForNumber(PhoneNumber number, Locale languageCode,
                                               string userRegion)
         {
-            PhoneNumberType numberType = phoneUtil.GetNumberType(number);
+            var numberType = phoneUtil.GetNumberType(number);
             if (numberType == PhoneNumberType.UNKNOWN)
             {
                 return "";
             }
-            else if (!phoneUtil.IsNumberGeographical(numberType, number.CountryCode))
+            if (!phoneUtil.IsNumberGeographical(numberType, number.CountryCode))
             {
                 return GetCountryNameForNumber(number, languageCode);
             }
