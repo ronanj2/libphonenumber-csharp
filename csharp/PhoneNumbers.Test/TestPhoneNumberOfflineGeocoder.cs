@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using System.IO;
+using System.Reflection;
 using Xunit;
 
 namespace PhoneNumbers.Test
@@ -27,7 +29,7 @@ namespace PhoneNumbers.Test
     public class TestPhoneNumberOfflineGeocoder
     {
         private PhoneNumberOfflineGeocoder geocoder;
-        const string TEST_MAPPING_DATA_DIRECTORY = "res.test_";
+        private static readonly string TestMappingDataDirectory = "res";
 
         // Set up some test numbers to re-use.
         private static readonly PhoneNumber KONumber1 =
@@ -60,7 +62,13 @@ namespace PhoneNumbers.Test
         public TestPhoneNumberOfflineGeocoder()
         {
             PhoneNumberUtil.ResetInstance();
-            geocoder = new PhoneNumberOfflineGeocoder(TEST_MAPPING_DATA_DIRECTORY);
+            var assembly =
+#if NET40
+                Assembly.GetExecutingAssembly();
+#else
+                typeof(TestPhoneNumberOfflineGeocoder).GetTypeInfo().Assembly;
+#endif
+            geocoder = new PhoneNumberOfflineGeocoder(assembly, TestMappingDataDirectory);
         }
 
         [Fact]

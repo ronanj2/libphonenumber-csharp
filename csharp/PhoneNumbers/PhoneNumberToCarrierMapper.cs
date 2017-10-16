@@ -21,6 +21,8 @@
  * @author Cecilia Roes
  */
 
+using System.Reflection;
+
 namespace PhoneNumbers
 {
     public class PhoneNumberToCarrierMapper {
@@ -32,8 +34,8 @@ namespace PhoneNumbers
         private static readonly PhoneNumberUtil PhoneUtil = PhoneNumberUtil.GetInstance();
 
         // @VisibleForTesting
-        internal PhoneNumberToCarrierMapper(string phonePrefixDataDirectory) {
-            prefixFileReader = new PrefixFileReader(phonePrefixDataDirectory);
+        internal PhoneNumberToCarrierMapper(Assembly assembly,string phonePrefixDataDirectory) {
+            prefixFileReader = new PrefixFileReader(assembly, phonePrefixDataDirectory);
         }
 
         /**
@@ -48,7 +50,18 @@ namespace PhoneNumbers
         {
             lock (InstanceLock)
             {
-                return instance ?? (instance = new PhoneNumberToCarrierMapper(MappingDataDirectory));
+                if (instance != null)
+                {
+                    return instance;
+                }
+                var assembly =
+#if NET40
+                    Assembly.GetExecutingAssembly();
+#else
+                typeof(PhoneNumberToCarrierMapper).GetTypeInfo().Assembly;
+#endif
+                instance = new PhoneNumberToCarrierMapper(assembly, MappingDataDirectory);
+                return instance;
             }
         }
 

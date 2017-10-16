@@ -15,6 +15,8 @@
  */
 
 using System.Globalization;
+using System.IO;
+using System.Reflection;
 
 namespace PhoneNumbers
 {
@@ -75,15 +77,15 @@ namespace PhoneNumbers
     {
         private static PhoneNumberOfflineGeocoder instance;
         private static readonly string MappingDataDirectory =
-            "/com/google/i18n/phonenumbers/geocoding/data/";
+            $"res{Path.DirectorySeparatorChar}";
         private readonly PrefixFileReader prefixFileReader;
         private static readonly object LockObj = new object();
 
         private readonly PhoneNumberUtil phoneUtil = PhoneNumberUtil.GetInstance();
 
-        internal PhoneNumberOfflineGeocoder(string phonePrefixDataDirectory)
+        internal PhoneNumberOfflineGeocoder(Assembly assembly, string phonePrefixDataDirectory)
         {
-            prefixFileReader = new PrefixFileReader(phonePrefixDataDirectory);
+            prefixFileReader = new PrefixFileReader(assembly, phonePrefixDataDirectory);
         }
 
         /**
@@ -99,7 +101,18 @@ namespace PhoneNumbers
         {
             lock (LockObj)
             {
-                return instance ?? (instance = new PhoneNumberOfflineGeocoder(MappingDataDirectory));
+                if (instance != null)
+                {
+                    return instance;
+                }
+                var assembly =
+#if NET40
+                    Assembly.GetExecutingAssembly();
+#else
+                typeof(PhoneNumberOfflineGeocoder).GetTypeInfo().Assembly;
+#endif
+                instance = new PhoneNumberOfflineGeocoder(assembly, MappingDataDirectory);
+                return instance;
             }
         }
 

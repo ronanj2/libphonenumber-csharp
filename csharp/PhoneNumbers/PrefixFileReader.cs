@@ -29,7 +29,7 @@ namespace PhoneNumbers
 {
     public class PrefixFileReader
     {
-
+        private readonly Assembly assembly;
         private readonly string phonePrefixDataDirectory;
         // The mappingFileProvider knows for which combination of countryCallingCode and language a phone
         // prefix mapping file is available in the file system, so that a file can be loaded when needed.
@@ -39,21 +39,18 @@ namespace PhoneNumbers
         private readonly Dictionary<string, PhonePrefixMap> availablePhonePrefixMaps =
             new Dictionary<string, PhonePrefixMap>();
 
-        public PrefixFileReader(string phonePrefixDataDirectory)
+        public PrefixFileReader(Assembly assembly, string phonePrefixDataDirectory)
         {
+            this.assembly = assembly;
             this.phonePrefixDataDirectory = phonePrefixDataDirectory;
             LoadMappingFileProvider();
         }
 
         private void LoadMappingFileProvider()
         {
-            var assembly =
-#if NET40
-                Assembly.GetExecutingAssembly();
-#else
-                typeof(PrefixFileReader).GetTypeInfo().Assembly;
-#endif
-            var source = assembly.GetManifestResourceStream(phonePrefixDataDirectory + "config");
+            var qq = assembly.GetManifestResourceNames();
+            var x = $"{assembly.GetName().Name}.{phonePrefixDataDirectory}.config";
+            var source = assembly.GetManifestResourceStream(x);
             BinaryReader input = null;
             try
             {
@@ -86,12 +83,6 @@ namespace PhoneNumbers
 
         private void LoadPhonePrefixMapFromFile(string fileName)
         {
-            var assembly =
-#if NET40
-                Assembly.GetExecutingAssembly();
-#else
-                typeof(PrefixFileReader).GetTypeInfo().Assembly;
-#endif
             var source =
                 assembly.GetManifestResourceStream(phonePrefixDataDirectory + fileName);
             BinaryReader input = null;

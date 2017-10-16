@@ -112,10 +112,10 @@ namespace PhoneNumbers
 
 
         /**
-        * Returns a string representing the data in this class. The string contains one line for each
-        * country calling code. The country calling code is followed by a '|' and then a list of
-        * comma-separated languages sorted in ascending order.
-        */
+         * Returns a string representing the data in this class. The string contains one line for each
+         * country calling code. The country calling code is followed by a '|' and then a list of
+         * comma-separated languages sorted in ascending order.
+         */
         public override string ToString()
         {
             var output = new StringBuilder();
