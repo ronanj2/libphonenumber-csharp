@@ -21,8 +21,9 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using PhoneNumbers;
 
-namespace PhoneNumbers
+namespace Tools
 {
     public class BuildMetadataFromXml
     {
