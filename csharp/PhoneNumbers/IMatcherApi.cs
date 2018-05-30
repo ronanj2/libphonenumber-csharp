@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-namespace PhoneNumbers.Internal
+namespace PhoneNumbers
 {
     /**
      * Internal phonenumber matching API used to isolate the underlying implementation of the

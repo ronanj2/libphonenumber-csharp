@@ -16,9 +16,8 @@
 
 using System;
 using System.Linq;
-using PhoneNumbers.Internal;
 
-namespace PhoneNumbers.Internal
+namespace PhoneNumbers
 {
     public sealed class RegexBasedMatcher : IMatcherApi
     {
@@ -45,7 +44,7 @@ namespace PhoneNumbers.Internal
         private static bool Match(string number, PhoneRegex pattern, bool allowPrefixMatch)
         {
             throw new NotImplementedException();
-            var matcher = pattern.MatchAll(number);
+            //var matcher = pattern.MatchAll(number);
 
         }
     }

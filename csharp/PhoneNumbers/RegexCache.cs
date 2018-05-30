@@ -16,7 +16,7 @@
 
 using System.Collections.Generic;
 
-namespace PhoneNumbers.Internal
+namespace PhoneNumbers
 {
     public class RegexCache
     {
@@ -41,8 +41,7 @@ namespace PhoneNumbers.Internal
         {
             lock (this)
             {
-                Entry e;
-                if (!cache.TryGetValue(regex, out e))
+                if (!cache.TryGetValue(regex, out var e))
                 {
                     // Insert new node
                     var r = new PhoneRegex(regex);

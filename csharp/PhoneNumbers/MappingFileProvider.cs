@@ -132,8 +132,7 @@ namespace PhoneNumbers
         {
             var fullLocale = ConstructFullLocale(language, script, region);
             var fullLocaleStr = fullLocale.ToString();
-            string normalizedLocale;
-            if (LocaleNormalizationMap.TryGetValue(fullLocaleStr, out normalizedLocale))
+            if (LocaleNormalizationMap.TryGetValue(fullLocaleStr, out var normalizedLocale))
                 if (setOfLangs.Contains(normalizedLocale))
                     return normalizedLocale;
             if (setOfLangs.Contains(fullLocaleStr))

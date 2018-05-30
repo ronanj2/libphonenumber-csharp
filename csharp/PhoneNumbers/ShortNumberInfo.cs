@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-using System;
+ 
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using PhoneNumbers.Internal;
 
 namespace PhoneNumbers
 {
@@ -86,7 +84,7 @@ namespace PhoneNumbers
          */
         private List<string> GetRegionCodesForCountryCode(int countryCallingCode)
         {
-            List<string> regionCodes = countryCallingCodeToRegionCodeMap[countryCallingCode];
+            var regionCodes = countryCallingCodeToRegionCodeMap[countryCallingCode];
             return regionCodes ?? new List<string>();
         }
 
@@ -97,7 +95,7 @@ namespace PhoneNumbers
         private bool RegionDialingFromMatchesNumber(PhoneNumber number,
             string regionDialingFrom)
         {
-            List<string> regionCodes = GetRegionCodesForCountryCode(number.CountryCode);
+            var regionCodes = GetRegionCodesForCountryCode(number.CountryCode);
             return regionCodes.Contains(regionDialingFrom);
         }
 
@@ -116,14 +114,14 @@ namespace PhoneNumbers
                 return false;
             }
 
-            PhoneMetadata phoneMetadata =
+            var phoneMetadata =
                 MetadataManager.GetShortNumberMetadataForRegion(regionDialingFrom);
             if (phoneMetadata == null)
             {
                 return false;
             }
 
-            int numberLength = getNationalSignificantNumber(number).Length;
+            var numberLength = GetNationalSignificantNumber(number).Length;
             return phoneMetadata.GeneralDesc.PossibleLengthList.Contains(numberLength);
         }
 
@@ -138,8 +136,8 @@ namespace PhoneNumbers
          */
         public bool IsPossibleShortNumber(PhoneNumber number)
         {
-            List<string> regionCodes = GetRegionCodesForCountryCode(number.CountryCode);
-            int shortNumberLength = getNationalSignificantNumber(number).Length;
+            var regionCodes = GetRegionCodesForCountryCode(number.CountryCode);
+            var shortNumberLength = GetNationalSignificantNumber(number).Length;
             foreach (var region in regionCodes)
             {
                 var phoneMetadata = MetadataManager.GetShortNumberMetadataForRegion(region);
@@ -172,21 +170,21 @@ namespace PhoneNumbers
                 return false;
             }
 
-            PhoneMetadata phoneMetadata =
+            var phoneMetadata =
                 MetadataManager.GetShortNumberMetadataForRegion(regionDialingFrom);
             if (phoneMetadata == null)
             {
                 return false;
             }
 
-            string shortNumber = getNationalSignificantNumber(number);
-            PhoneNumberDesc generalDesc = phoneMetadata.GeneralDesc;
+            var shortNumber = GetNationalSignificantNumber(number);
+            var generalDesc = phoneMetadata.GeneralDesc;
             if (!MatchesPossibleNumberAndNationalNumber(shortNumber, generalDesc))
             {
                 return false;
             }
 
-            PhoneNumberDesc shortNumberDesc = phoneMetadata.ShortCode;
+            var shortNumberDesc = phoneMetadata.ShortCode;
             return MatchesPossibleNumberAndNationalNumber(shortNumber, shortNumberDesc);
         }
 
@@ -201,8 +199,8 @@ namespace PhoneNumbers
          */
         public bool IsValidShortNumber(PhoneNumber number)
         {
-            List<string> regionCodes = GetRegionCodesForCountryCode(number.CountryCode);
-            string regionCode = GetRegionCodeForShortNumberFromRegionList(number, regionCodes);
+            var regionCodes = GetRegionCodesForCountryCode(number.CountryCode);
+            var regionCode = GetRegionCodeForShortNumberFromRegionList(number, regionCodes);
             if (regionCodes.Count > 1 && regionCode != null)
             {
                 // If a matching region had been found for the phone number from among two or more regions,
@@ -244,14 +242,14 @@ namespace PhoneNumbers
             }
 
             // Note that regionDialingFrom may be null, in which case phoneMetadata will also be null.
-            PhoneMetadata phoneMetadata = MetadataManager.GetShortNumberMetadataForRegion(
+            var phoneMetadata = MetadataManager.GetShortNumberMetadataForRegion(
                 regionDialingFrom);
             if (phoneMetadata == null)
             {
                 return ShortNumberCost.UNKNOWN_COST;
             }
 
-            string shortNumber = getNationalSignificantNumber(number);
+            var shortNumber = GetNationalSignificantNumber(number);
 
             // The possible lengths are not present for a particular sub-type if they match the general
             // description; for this reason, we check the possible lengths against the general description
@@ -310,7 +308,7 @@ namespace PhoneNumbers
          */
         public ShortNumberCost GetExpectedCost(PhoneNumber number)
         {
-            List<string> regionCodes = GetRegionCodesForCountryCode(number.CountryCode);
+            var regionCodes = GetRegionCodesForCountryCode(number.CountryCode);
             if (regionCodes.Count == 0)
             {
                 return ShortNumberCost.UNKNOWN_COST;
@@ -321,10 +319,10 @@ namespace PhoneNumbers
                 return GetExpectedCostForRegion(number, regionCodes[0]);
             }
 
-            ShortNumberCost cost = ShortNumberCost.TOLL_FREE;
-            foreach (string regionCode in regionCodes)
+            var cost = ShortNumberCost.TOLL_FREE;
+            foreach (var regionCode in regionCodes)
             {
-                ShortNumberCost costForRegion = GetExpectedCostForRegion(number, regionCode);
+                var costForRegion = GetExpectedCostForRegion(number, regionCode);
                 switch (costForRegion)
                 {
                     case ShortNumberCost.PREMIUM_RATE:
@@ -361,10 +359,10 @@ namespace PhoneNumbers
                 return regionCodes[0];
             }
 
-            string nationalNumber = getNationalSignificantNumber(number);
-            foreach (string regionCode in regionCodes)
+            var nationalNumber = GetNationalSignificantNumber(number);
+            foreach (var regionCode in regionCodes)
             {
-                PhoneMetadata phoneMetadata = MetadataManager.GetShortNumberMetadataForRegion(regionCode);
+                var phoneMetadata = MetadataManager.GetShortNumberMetadataForRegion(regionCode);
                 if (phoneMetadata != null
                     && MatchesPossibleNumberAndNationalNumber(nationalNumber, phoneMetadata.ShortCode))
                 {
@@ -390,15 +388,15 @@ namespace PhoneNumbers
          * @return a valid short number for the specified region. Returns an empty string when the
          *     metadata does not contain such information.
          */
-        private string GetExampleShortNumber(string regionCode)
+        public string GetExampleShortNumber(string regionCode)
         {
-            PhoneMetadata phoneMetadata = MetadataManager.GetShortNumberMetadataForRegion(regionCode);
+            var phoneMetadata = MetadataManager.GetShortNumberMetadataForRegion(regionCode);
             if (phoneMetadata == null)
             {
                 return "";
             }
 
-            PhoneNumberDesc desc = phoneMetadata.ShortCode;
+            var desc = phoneMetadata.ShortCode;
             return desc.ExampleNumber ?? string.Empty;
         }
 
@@ -410,9 +408,9 @@ namespace PhoneNumbers
          * @return a valid short number for the specified region and cost category. Returns an empty
          *     string when the metadata does not contain such information, or the cost is UNKNOWN_COST.
          */
-        private string GetExampleShortNumberForCost(string regionCode, ShortNumberCost cost)
+        public string GetExampleShortNumberForCost(string regionCode, ShortNumberCost cost)
         {
-            PhoneMetadata phoneMetadata = MetadataManager.GetShortNumberMetadataForRegion(regionCode);
+            var phoneMetadata = MetadataManager.GetShortNumberMetadataForRegion(regionCode);
             if (phoneMetadata == null)
             {
                 return "";
@@ -475,7 +473,7 @@ namespace PhoneNumbers
         private bool MatchesEmergencyNumberHelper(string number, string regionCode,
             bool allowPrefixMatch)
         {
-            string possibleNumber = PhoneNumberUtil.ExtractPossibleNumber(number);
+            var possibleNumber = PhoneNumberUtil.ExtractPossibleNumber(number);
             if (PhoneNumberUtil.PlusCharsPattern.MatchBeginning(possibleNumber).Success)
             {
                 // Returns false if the number starts with a plus sign. We don't believe dialing the country
@@ -484,14 +482,14 @@ namespace PhoneNumbers
                 return false;
             }
 
-            PhoneMetadata metadata = MetadataManager.GetShortNumberMetadataForRegion(regionCode);
+            var metadata = MetadataManager.GetShortNumberMetadataForRegion(regionCode);
             if (metadata == null || !metadata.HasEmergency)
             {
                 return false;
             }
 
-            string normalizedNumber = PhoneNumberUtil.NormalizeDigitsOnly(possibleNumber);
-            bool allowPrefixMatchForRegion =
+            var normalizedNumber = PhoneNumberUtil.NormalizeDigitsOnly(possibleNumber);
+            var allowPrefixMatchForRegion =
                 allowPrefixMatch && !RegionsWhereEmergencyNumbersMustBeExact.Contains(regionCode);
             return matcherApi.MatchNationalNumber(normalizedNumber, metadata.Emergency,
                 allowPrefixMatchForRegion);
@@ -510,10 +508,10 @@ namespace PhoneNumbers
          */
         public bool IsCarrierSpecific(PhoneNumber number)
         {
-            List<string> regionCodes = GetRegionCodesForCountryCode(number.CountryCode);
-            string regionCode = GetRegionCodeForShortNumberFromRegionList(number, regionCodes);
-            string nationalNumber = getNationalSignificantNumber(number);
-            PhoneMetadata phoneMetadata = MetadataManager.GetShortNumberMetadataForRegion(regionCode);
+            var regionCodes = GetRegionCodesForCountryCode(number.CountryCode);
+            var regionCode = GetRegionCodeForShortNumberFromRegionList(number, regionCodes);
+            var nationalNumber = GetNationalSignificantNumber(number);
+            var phoneMetadata = MetadataManager.GetShortNumberMetadataForRegion(regionCode);
             return phoneMetadata != null
                    && MatchesPossibleNumberAndNationalNumber(nationalNumber,
                        phoneMetadata.CarrierSpecific);
@@ -539,8 +537,8 @@ namespace PhoneNumbers
                 return false;
             }
 
-            string nationalNumber = getNationalSignificantNumber(number);
-            PhoneMetadata phoneMetadata =
+            var nationalNumber = GetNationalSignificantNumber(number);
+            var phoneMetadata =
                 MetadataManager.GetShortNumberMetadataForRegion(regionDialingFrom);
             return phoneMetadata != null
                    && MatchesPossibleNumberAndNationalNumber(nationalNumber,
@@ -567,10 +565,10 @@ namespace PhoneNumbers
                 return false;
             }
 
-            PhoneMetadata phoneMetadata =
+            var phoneMetadata =
                 MetadataManager.GetShortNumberMetadataForRegion(regionDialingFrom);
             return phoneMetadata != null
-                   && MatchesPossibleNumberAndNationalNumber(getNationalSignificantNumber(number),
+                   && MatchesPossibleNumberAndNationalNumber(GetNationalSignificantNumber(number),
                        phoneMetadata.SmsServices);
         }
 
@@ -585,10 +583,10 @@ namespace PhoneNumbers
          * @param number  the phone number for which the national significant number is needed
          * @return  the national significant number of the PhoneNumber object passed in
          */
-        private static string getNationalSignificantNumber(PhoneNumber number)
+        private static string GetNationalSignificantNumber(PhoneNumber number)
         {
             // If leading zero(s) have been set, we prefix this now. Note this is not a national prefix.
-            StringBuilder nationalNumber = new StringBuilder();
+            var nationalNumber = new StringBuilder();
             for (var i = 0; i < number.NumberOfLeadingZeros; ++i)
                 nationalNumber.Append('0');
 

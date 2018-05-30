@@ -48,9 +48,22 @@ namespace PhoneNumbers
         {
             public StreamReader LoadMetadata(string metadataFileName)
             {
-                //TODO should prob take in stream because of static
-                var stream = Assembly.GetManifestResourceStream(metadataFileName);
-                return new StreamReader(stream);
+#if (NET35 || NET40)
+                var asm = Assembly.GetExecutingAssembly();
+#else
+                var asm = typeof(MetadataManager).GetTypeInfo().Assembly;
+#endif
+                var name = asm.GetManifestResourceNames().FirstOrDefault(n => n.EndsWith(metadataFileName)) ??
+                           "missing";
+
+#if NETSTANDARD1_3
+
+                return new StreamReader(new FileStream(name, FileMode.Open));
+#elif PORTABLE
+                return null; //todo find a better workaround for this
+#else
+                return new StreamReader(name);
+#endif
             }
         }
 
@@ -191,6 +204,7 @@ namespace PhoneNumbers
             {
                 return maps;
             }
+
             maps = SingleFileMetadataMaps.Load(fileName, metadataLoader);
             Interlocked.CompareExchange(ref atomicReference, maps, null);
             return atomicReference;
@@ -241,7 +255,6 @@ namespace PhoneNumbers
                 try
                 {
                     //TODO fix read external
-                    metadataCollection.re(ois);
                 }
                 catch (IOException e)
                 {
@@ -257,7 +270,7 @@ namespace PhoneNumbers
                     if (ois != null)
                     {
                         // This will close all underlying streams as well, including source.
-                        ((IDisposable)ois).Dispose();
+                        ((IDisposable) ois).Dispose();
                     }
                     else
                     {
