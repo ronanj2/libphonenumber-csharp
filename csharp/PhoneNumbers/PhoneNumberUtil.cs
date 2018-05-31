@@ -592,7 +592,7 @@ namespace PhoneNumbers
 
         private void LoadMetadataFromFile(string filePrefix, string regionCode)
         {
-#if NET40
+#if NET40 || NET35
             var asm = Assembly.GetExecutingAssembly();
 #else
             var asm = typeof(PhoneNumberUtil).GetTypeInfo().Assembly;
